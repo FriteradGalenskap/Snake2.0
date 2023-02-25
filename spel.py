@@ -1,4 +1,3 @@
-
 import pygame
 from threading import Thread
 
@@ -6,16 +5,17 @@ import random
 import sys
 from typing import Tuple
 import time
-height = 200
-width = 200
+
+height = 800
+width = 800
 SCREEN_SIZE = (height, width)
-FRAME_RATE = 30
+FRAME_RATE = 1
 SCORE = 0
 
-boxLenth= int(height*1/100)
-padding = boxLenth   
-direction=0
- 
+boxLenth = int(height * 5 / 100)
+padding = boxLenth
+direction = 0
+
 lineW = width - padding
 lineH = height - padding
 
@@ -29,78 +29,100 @@ def init() -> Tuple[pygame.Surface, pygame.time.Clock]:
     return screen, clock
 
 
+def draw(screen, xCor, yCor, Col):
+    r = pygame.Rect(xCor, yCor, boxLenth, boxLenth)
 
-   
-    
-    
-def draw(screen, xCor,yCor,Col):
-    r = pygame.Rect(xCor,yCor,boxLenth,boxLenth)
-    
     pygame.draw.rect(screen, Col, r)
-    #print(f"x: {xCor}, y: {yCor}")
-    
-def calcNxtBox(X,Y,D):
-    if D==0:
+    # print(f"x: {xCor}, y: {yCor}")
+
+
+def calcNxtBox(X, Y, D):
+    if D == 0:
         X += boxLenth
-    elif D==1:
+    elif D == 1:
         Y += boxLenth
-    elif D==2:
-        X-= boxLenth
+    elif D == 2:
+        X -= boxLenth
     else:
-        Y -=boxLenth
-    return (X,Y)
+        Y -= boxLenth
+    return (X, Y)
 
-    
+
 def frame(screen):
-    size = 5
-    pygame.draw.line(screen,'white',(padding,padding),(lineW,padding),size)
-    pygame.draw.line(screen,'white',(padding,padding),(padding,lineH),size)
-    pygame.draw.line(screen,'white',(lineW,lineH),(lineW,padding),size)
-    pygame.draw.line(screen,'white',(lineW,lineH),(padding,lineH),size)
-    
-def collisionDetection(x,y):
-    return x>=lineW or x<padding or y>=lineH or y<padding
+    size = 6
+    h = int(size / 2)
+    pygame.draw.line(
+        screen, "white", (padding - h, padding - h), (lineW + h, padding - h), size
+    )
+    pygame.draw.line(
+        screen, "white", (padding - h, padding - h), (padding - h, lineH + h), size
+    )
+    pygame.draw.line(
+        screen, "white", (lineW + h, lineH + h), (lineW + h, padding - h), size
+    )
+    pygame.draw.line(
+        screen, "white", (lineW + h, lineH + h), (padding - h, lineH + h), size
+    )
 
 
+def collisionDetectionLine(x, y):
+    return x >= lineW or x < padding or y >= lineH or y < padding
 
-    pass
+
+def collisionDetectionSelf(x, y, boxes):
+    for box in boxes:
+        if x == box.x and y == box.y:
+            return True
+    return False
+
+
 class Apple:
     def listCords(self):
-        
-        print(f'x{self.x}y{self.y}')
+        print(f"x{self.x}y{self.y}")
+
     def __init__(self):
-        self.x=random.randint(int(1+(padding/boxLenth)) ,int((lineW/boxLenth)-1))*boxLenth
-        self.y=random.randint(int(1+(padding/boxLenth)),int((lineH/boxLenth)-1))*boxLenth
-        #self.listCords()
+        self.x = (
+            random.randint(int(1 + (padding / boxLenth)), int((lineW / boxLenth) - 1))
+            * boxLenth
+        )
+        self.y = (
+            random.randint(int(1 + (padding / boxLenth)), int((lineH / boxLenth) - 1))
+            * boxLenth
+        )
+        # self.listCords()
+
 
 class Box:
-    x=0
-    y=0
+    x = 0
+    y = 0
+
     def __init__(self, x, y):
-        self.x =x
-        self.y=y
+        self.x = x
+        self.y = y
+
 
 class Snake:
-    
-    boxar=[]
+    boxar = []
+
     def __init__(self):
         pass
 
+
 def main(screen: pygame.Surface, clock: pygame.time.Clock):
-    appleHit=False
+    appleHit = False
     global FRAME_RATE
     global SCORE
     frame(screen)
     apple = Apple()
-    draw(screen,apple.x,apple.y,'red')
-    snake=Snake()
+    draw(screen, apple.x, apple.y, "red")
+    snake = Snake()
 
-    yMid = int(height/2)
-    xMid = int(width/2)
-    box1 = Box(xMid,yMid)
-    box2 = Box(xMid-boxLenth,yMid)
-    box3 = Box(xMid-2*boxLenth,yMid)
-    box4 = Box(xMid-3*boxLenth,yMid)
+    yMid = int(height / 2)
+    xMid = int(width / 2)
+    box1 = Box(xMid, yMid)
+    box2 = Box(xMid - boxLenth, yMid)
+    box3 = Box(xMid - 2 * boxLenth, yMid)
+    box4 = Box(xMid - 3 * boxLenth, yMid)
     snake.boxar.append(box1)
     snake.boxar.append(box2)
     snake.boxar.append(box3)
@@ -115,37 +137,41 @@ def main(screen: pygame.Surface, clock: pygame.time.Clock):
         box3 = snake.boxar[2]
         box4 = snake.boxar[3]
         boxDirection = direction
-        newBox= calcNxtBox(boxFront.x,boxFront.y,boxDirection)
-       
-        box =Box(newBox[0],newBox[1])
-        snake.boxar.insert(0,box)
-        draw(screen,newBox[0],newBox[1],'red')
-        appleHit = apple.x == newBox[0] and apple.y == newBox[1]
-        if collisionDetection(newBox[0],newBox[1]):
+        newBox = calcNxtBox(boxFront.x, boxFront.y, boxDirection)
+        if collisionDetectionSelf(newBox[0], newBox[1], snake.boxar):
             time.sleep(2638476243)
+        box = Box(newBox[0], newBox[1])
+        snake.boxar.insert(0, box)
+        draw(screen, newBox[0], newBox[1], "red")
+        appleHit = apple.x == newBox[0] and apple.y == newBox[1]
+        if collisionDetectionLine(newBox[0], newBox[1]):
+            time.sleep(2638476243)
+
         if not appleHit:
             l = len(snake.boxar)
-            boxBack = snake.boxar[l-1]
-            snake.boxar.pop(l-1)
-            draw(screen,boxBack.x,boxBack.y,'black')
-            #print(f"anal boxar: {l}")
+            boxBack = snake.boxar[l - 1]
+            snake.boxar.pop(l - 1)
+            draw(screen, boxBack.x, boxBack.y, "black")
+            # print(f"anal boxar: {l}")
         else:
-            apple=Apple()
-            draw(screen,apple.x,apple.y,'red')
-            FRAME_RATE+=1
-            SCORE += 1 
+            apple = Apple()
+            draw(screen, apple.x, apple.y, "red")
+            FRAME_RATE += 1
+            SCORE += 1
             print(SCORE)
+            # myfont = pg.font.SysFont("Comic Sans MS", 30)
 
+            # label = myfont.render("Python and Pygame are Fun!", 1, 'yellow')
+            # screen.blit(label, (10, 10))
 
         pygame.display.update()
         clock.tick(FRAME_RATE)
 
-def keyListener():
-    global direction 
-    while True:
-        
-        for event in pygame.event.get():
 
+def keyListener():
+    global direction
+    while True:
+        for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     direction = 2
@@ -154,12 +180,13 @@ def keyListener():
                 elif event.key == pygame.K_DOWN:
                     direction = 1
                 elif event.key == pygame.K_UP:
-                    direction =3   
+                    direction = 3
+
 
 if __name__ == "__main__":
     screen, clock = init()
     from threading import Thread
+
     t = Thread(target=keyListener)
     t.start()
     main(screen, clock)
-    
