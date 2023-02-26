@@ -1,6 +1,6 @@
-import pygame
-from threading import Thread
 
+from threading import Thread
+import pygame 
 import random
 import sys
 from typing import Tuple
@@ -9,7 +9,7 @@ import time
 height = 800
 width = 800
 SCREEN_SIZE = (height, width)
-FRAME_RATE = 1
+FRAME_RATE = 3
 SCORE = 0
 
 boxLenth = int(height * 5 / 100)
@@ -63,6 +63,10 @@ def frame(screen):
     pygame.draw.line(
         screen, "white", (lineW + h, lineH + h), (padding - h, lineH + h), size
     )
+
+def quit ():
+    pygame.quit()
+    sys.exit()
 
 
 def collisionDetectionLine(x, y):
@@ -139,13 +143,19 @@ def main(screen: pygame.Surface, clock: pygame.time.Clock):
         boxDirection = direction
         newBox = calcNxtBox(boxFront.x, boxFront.y, boxDirection)
         if collisionDetectionSelf(newBox[0], newBox[1], snake.boxar):
-            time.sleep(2638476243)
+            time.sleep(1)
+            quit()           
+            
         box = Box(newBox[0], newBox[1])
         snake.boxar.insert(0, box)
-        draw(screen, newBox[0], newBox[1], "red")
+        draw(screen, newBox[0], newBox[1], "green")
         appleHit = apple.x == newBox[0] and apple.y == newBox[1]
+        draw(screen, boxFront.x, boxFront.y, "red")
+        
         if collisionDetectionLine(newBox[0], newBox[1]):
-            time.sleep(2638476243)
+            time.sleep(1)
+            quit()
+            #time.sleep(2638476243)
 
         if not appleHit:
             l = len(snake.boxar)
@@ -168,25 +178,25 @@ def main(screen: pygame.Surface, clock: pygame.time.Clock):
         clock.tick(FRAME_RATE)
 
 
+
 def keyListener():
     global direction
     while True:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    direction = 2
-                elif event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_LEFT and direction != 0:
+                    direction = 2 
+                elif event.key == pygame.K_RIGHT and direction != 2:
                     direction = 0
-                elif event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN and direction != 3:
                     direction = 1
-                elif event.key == pygame.K_UP:
+                elif event.key == pygame.K_UP and direction != 1:
                     direction = 3
 
 
 if __name__ == "__main__":
     screen, clock = init()
     from threading import Thread
-
     t = Thread(target=keyListener)
     t.start()
     main(screen, clock)
